@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-from ..agent import get_agent
+from agent import get_agent
 
 router = APIRouter(prefix="/api", tags=["Performance Review"])
 
