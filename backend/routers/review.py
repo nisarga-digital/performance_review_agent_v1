@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-from backend.agent import get_agent
+from agent import get_agent
 
 router = APIRouter(prefix="/api", tags=["Performance Review"])
 
@@ -20,10 +20,15 @@ LOG_FILE = Path(__file__).parent.parent / "query_log.json"
 
 # ── Request / Response Models ──────────────────────────────────────────────────
 
+
 class ReviewRequest(BaseModel):
-    employee_name: str = Field(..., min_length=2, description="Full or partial employee name")
+    employee_name: str = Field(
+        ..., min_length=2, description="Full or partial employee name"
+    )
     role: str = Field(..., description="Employee role (e.g. Software Engineer)")
-    additional_context: str = Field(default="", description="Any extra context for the review")
+    additional_context: str = Field(
+        default="", description="Any extra context for the review"
+    )
 
 
 class ReviewResponse(BaseModel):
@@ -45,7 +50,9 @@ class ChatMessage(BaseModel):
 
 
 class AnalyzeRequest(BaseModel):
-    question: str = Field(..., min_length=3, description="Natural-language performance analytics question")
+    question: str = Field(
+        ..., min_length=3, description="Natural-language performance analytics question"
+    )
     chat_history: list[ChatMessage] = Field(default_factory=list)
 
 
@@ -70,7 +77,11 @@ class QueryLogResponse(BaseModel):
 
 
 def _extract_review_text(agent_result: dict) -> str:
-    """Read the final AI response from the agent state."""
+    # ✅ Case 1: direct output (new LangChain)
+    if isinstance(agent_result, dict) and "output" in agent_result:
+        return str(agent_result["output"]).strip()
+
+    # ✅ Case 2: messages (your current logic)
     messages = agent_result.get("messages", [])
     for message in reversed(messages):
         if isinstance(message, AIMessage):
@@ -85,6 +96,7 @@ def _extract_review_text(agent_result: dict) -> str:
                     elif isinstance(item, dict) and item.get("type") == "text":
                         text_parts.append(item.get("text", ""))
                 return "\n".join(part for part in text_parts if part).strip()
+
     raise ValueError("Agent returned no final review text.")
 
 
@@ -119,6 +131,7 @@ def _append_query_log(entry: dict) -> None:
 
 # ── Endpoints ──────────────────────────────────────────────────────────────────
 
+
 @router.get("/health", response_model=HealthResponse)
 async def health_check():
     return HealthResponse(status="ok", message="Performance Review Agent is running.")
@@ -131,16 +144,33 @@ async def generate_review(request: ReviewRequest):
     The agent will fetch data from CSV/Excel files using LangChain tools.
     """
     query = (
-        f"Generate a complete performance review for employee '{request.employee_name}' "
-        f"who works as a '{request.role}'. "
-        f"Search both CSV and Excel data sources for their performance data. "
+        f"Generate a professional annual performance review for employee '{request.employee_name}' "
+        f"who works as a '{request.role}'.\n"
+        f"You must strictly follow the Performance Review rules outlined in your system prompt.\n"
+        f"Please gather all inputs: performance history, self-review, manager feedback, and project data "
+        f"from the CSV and Excel data sources before writing the narrative."
     )
     if request.additional_context:
         query += f"Additional context: {request.additional_context}"
 
     try:
         agent = get_agent()
-        result = agent.invoke({"messages": [{"role": "user", "content": query}]})
+        result = agent.invoke(
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": f"""
+                        You MUST use CSV_Search or Excel_Search before answering.
+
+                        User request:
+                        {query}
+                        """,
+                    }
+                ]
+            },
+            config={"configurable": {"thread_id": "default_api_session"}}
+        )
         review_text = _extract_review_text(result)
         tools_used = _extract_tools_used(result)
 
@@ -168,13 +198,16 @@ async def analyze_question(request: AnalyzeRequest):
     if request.chat_history:
         prompt_lines.append("Relevant prior conversation:")
         for message in request.chat_history[-6:]:
-            prompt_lines.append(f"{message.role.title()}: {message.content}")
+            prompt_lines.append(f"{message.role}: {message.content}")
 
     prompt = "\n".join(prompt_lines)
 
     try:
         agent = get_agent()
-        result = agent.invoke({"messages": [{"role": "user", "content": prompt}]})
+        result = agent.invoke(
+            {"messages": [{"role": "user", "content": prompt}]},
+            config={"configurable": {"thread_id": "default_api_session"}}
+        )
         answer = _extract_review_text(result)
         tools_used = _extract_tools_used(result)
         timestamp = datetime.now().isoformat(timespec="seconds")
@@ -209,7 +242,7 @@ async def upload_data_file(file: UploadFile = File(...)):
     if file_ext not in allowed_extensions:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported file type '{file_ext}'. Allowed: {allowed_extensions}"
+            detail=f"Unsupported file type '{file_ext}'. Allowed: {allowed_extensions}",
         )
 
     dest = DATA_DIR / file.filename
@@ -218,7 +251,10 @@ async def upload_data_file(file: UploadFile = File(...)):
     with open(dest, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    return {"message": f"File '{file.filename}' uploaded successfully.", "path": str(dest)}
+    return {
+        "message": f"File '{file.filename}' uploaded successfully.",
+        "path": str(dest),
+    }
 
 
 @router.delete("/data-sources/{filename}")

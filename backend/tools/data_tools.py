@@ -6,6 +6,8 @@ These tools are registered with LangChain and called by the agent.
 import pandas as pd
 from pathlib import Path
 from langchain.tools import tool
+from difflib import get_close_matches
+
 
 DATA_DIR = Path(__file__).parent.parent / "sample_data"
 
@@ -21,42 +23,51 @@ def _prepare_df(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _search_dataframe(df: pd.DataFrame, query: str) -> pd.DataFrame:
-    """Search across the name column first, then across all row text."""
     query_lower = _normalize(query)
+
     if not query_lower:
         return df.head(20)
 
+    # ---- NAME MATCHING (IMPROVED) ----
     if "name" in df.columns:
-        names = df["name"].dropna().unique()
-        matched_names = [n for n in names if str(n).strip().lower() in query_lower]
-        if matched_names:
-            return df[df["name"].isin(matched_names)]
-            
-        name_mask = df["name"].astype(str).str.strip().str.lower().str.contains(query_lower, na=False)
-        name_matches = df[name_mask]
-        if not name_matches.empty:
-            return name_matches
+        df["name_clean"] = df["name"].astype(str).str.strip().str.lower()
 
+        # Exact match
+        exact_matches = df[df["name_clean"] == query_lower]
+        if not exact_matches.empty:
+            return exact_matches
+
+        # Partial match
+        partial_matches = df[df["name_clean"].str.contains(query_lower, na=False)]
+        if not partial_matches.empty:
+            return partial_matches
+
+        # 🔥 FUZZY MATCH (handles SneHa, typos, etc.)
+        unique_names = df["name_clean"].unique().tolist()
+        close = get_close_matches(query_lower, unique_names, n=5, cutoff=0.6)
+
+        if close:
+            return df[df["name_clean"].isin(close)]
+
+    # ---- KEYWORD MATCHING (same as yours) ----
     keywords = [part for part in query_lower.replace(",", " ").split() if part]
-    if not keywords:
-        return df.head(20)
 
     row_text = df.astype(str).agg(" ".join, axis=1).str.lower()
-    
+
     def count_matches(text):
         return sum(1 for keyword in keywords if keyword in text)
-        
+
     match_counts = row_text.apply(count_matches)
     has_matches = match_counts > 0
-    
+
     if not has_matches.any():
         fallback_mask = row_text.str.contains(query_lower, na=False)
-        matches = df[fallback_mask]
-        return matches.head(25)
-    
+        return df[fallback_mask].head(25)
+
     df_with_counts = df[has_matches].copy()
-    df_with_counts['_match_count'] = match_counts[has_matches]
-    return df_with_counts.sort_values('_match_count', ascending=False).drop(columns=['_match_count']).head(25)
+    df_with_counts["_match_count"] = match_counts[has_matches]
+
+    return df_with_counts.sort_values("_match_count", ascending=False).drop(columns=["_match_count"]).head(25)
 
 
 @tool
