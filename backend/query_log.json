@@ -85,5 +85,23 @@
       "CSV_Search",
       "Excel_Search"
     ]
+  },
+  {
+    "timestamp": "2026-04-12T22:45:11",
+    "question": "tell about sneha gupta",
+    "answer": "Here is the information about Sneha Gupta:\n\n### Employee Profile: Sneha Gupta\n\n**Personal Details:**\n*   **Employee ID:** E001\n*   **Candidate ID:** C001\n*   **Name:** Sneha Gupta\n*   **Location:** Pune\n*   **Education:** MCA\n*   **Previous Companies:** TCS, Microsoft\n\n**Professional Background:**\n*   **Employee Role:** Junior AI/ML Engineer (2024, 2025), AI/ML Engineer (2026)\n*   **Experience Years:** 1 (2024), 2 (2025), 3 (2026)\n\n**Skills:**\n*   NLP\n*   Java\n*   Python\n*   Go\n*   Node.js\n\n**Certifications:**\n*   Certified Kubernetes Administrator\n*   Oracle Java Certification\n*   AWS Certified\n\n**Projects:**\n*   Customer Churn Predictor\n*   Social Media Analytics Tool\n*   Sentiment Analysis Dashboard\n*   IoT Home Automation\n\n**Performance History:**\n\n**Review Period: 2024**\n*   **Rating:** 4.3\n*   **Project Rating:** 3.4\n*   **Strengths:** Technical Architecture\n*   **Improvements:** Increase testing coverage\n*   **Feedback:** Provides constructive code reviews.\n*   **Goals:** Contribute to open source\n\n**Review Period: 2025 (Review 1)**\n*   **Rating:** 3.5\n*   **Project Rating:** 4.4\n*   **Strengths:** Quick learner\n*   **Improvements:** Enhance public speaking\n*   **Feedback:** Shows strong initiative in challenging tasks.\n*   **Goals:** Improve leadership skills\n\n**Review Period: 2025 (Review 2)**\n*   **Rating:** 3.5\n*   **Project Rating:** 3.2\n*   **Strengths:** Technical Architecture\n*   **Improvements:** Learn system design\n*   **Feedback:** Great mentor for junior developers.\n*   **Goals:** Get certified in Advanced Security\n\n**Review Period: 2026**\n*   **Rating:** 4.6\n*   **Project Rating:** 4.1\n*   **Strengths:** Technical Architecture\n*   **Improvements:** Learn system design\n*   **Feedback:** Consistently meets deadlines and expectations.\n*   **Goals:** Get certified in Advanced Security",
+    "tools_used": [
+      "CSV_Search",
+      "Excel_Search"
+    ]
+  },
+  {
+    "timestamp": "2026-04-12T22:56:18",
+    "question": "tell me about sneha gupta",
+    "answer": "Here is the information about Sneha Gupta:\n\n### Employee Profile: Sneha Gupta\n\n**Personal Details:**\n*   **Employee ID:** E001\n*   **Candidate ID:** C001\n*   **Name:** Sneha Gupta\n*   **Location:** Pune\n*   **Education:** MCA\n*   **Previous Companies:** TCS, Microsoft\n\n**Professional Background:**\n*   **Employee Role:** Junior AI/ML Engineer (2024, 2025), AI/ML Engineer (2026)\n*   **Experience Years:** 1 (2024), 2 (2025), 3 (2026)\n\n**Skills:**\n*   NLP\n*   Java\n*   Python\n*   Go\n*   Node.js\n\n**Certifications:**\n*   Certified Kubernetes Administrator\n*   Oracle Java Certification\n*   AWS Certified\n\n**Projects:**\n*   Customer Churn Predictor\n*   Social Media Analytics Tool\n*   Sentiment Analysis Dashboard\n*   IoT Home Automation\n\n**Performance History:**\n\n**Review Period: 2024**\n*   **Rating:** 4.3\n*   **Project Rating:** 3.4\n*   **Strengths:** Technical Architecture\n*   **Improvements:** Increase testing coverage\n*   **Feedback:** Provides constructive code reviews.\n*   **Goals:** Contribute to open source\n\n**Review Period: 2025 (Review 1)**\n*   **Rating:** 3.5\n*   **Project Rating:** 4.4\n*   **Strengths:** Quick learner\n*   **Improvements:** Enhance public speaking\n*   **Feedback:** Shows strong initiative in challenging tasks.\n*   **Goals:** Improve leadership skills\n\n**Review Period: 2025 (Review 2)**\n*   **Rating:** 3.5\n*   **Project Rating:** 3.2\n*   **Strengths:** Technical Architecture\n*   **Improvements:** Learn system design\n*   **Feedback:** Great mentor for junior developers.\n*   **Goals:** Get certified in Advanced Security\n\n**Review Period: 2026**\n*   **Rating:** 4.6\n*   **Project Rating:** 4.1\n*   **Strengths:** Technical Architecture\n*   **Improvements:** Learn system design\n*   **Feedback:** Consistently meets deadlines and expectations.\n*   **Goals:** Get certified in Advanced Security",
+    "tools_used": [
+      "CSV_Search",
+      "Excel_Search"
+    ]
   }
 ]

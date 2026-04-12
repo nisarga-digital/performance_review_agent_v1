@@ -193,3 +193,62 @@ body {
 .count-animate {
   animation: count-up 0.4s ease;
 }
+
+/* Chat markdown styling */
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3 {
+  color: #e2e8f0;
+  font-weight: 600;
+  margin: 8px 0 6px;
+}
+
+.chat-markdown h2 {
+  font-size: 15px;
+}
+
+.chat-markdown h3 {
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.chat-markdown p {
+  margin: 6px 0;
+}
+
+.chat-markdown strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.chat-markdown ul,
+.chat-markdown ol {
+  margin: 6px 0 6px 16px;
+  padding: 0;
+}
+
+.chat-markdown li {
+  margin: 4px 0;
+}
+
+.chat-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.chat-markdown th,
+.chat-markdown td {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.chat-markdown th {
+  background: rgba(124, 107, 255, 0.08);
+  color: #94a3b8;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}

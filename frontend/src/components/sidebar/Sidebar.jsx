@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Database, HardDrive, FileText, Upload, X } from "lucide-react";
-import FileUploader from "../components/fileuploader/FileUploader";
+import { Database, HardDrive, FileText, Upload, X, Trash2, Loader2 } from "lucide-react";
+import { deleteDataSource } from "../../api";
+import toast from "react-hot-toast";
+import FileUploader from "../fileuploader/Fileuploader";
 
 export default function Sidebar({
   isOpen,
@@ -9,8 +11,24 @@ export default function Sidebar({
   isOnline,
   dataSources,
   onUploadSuccess,
+  onDeleteSuccess,
   logs,
 }) {
+  const [deletingFile, setDeletingFile] = useState(null);
+
+  const handleDelete = async (filename) => {
+    try {
+      setDeletingFile(filename);
+      await deleteDataSource(filename);
+      toast.success(`${filename} deleted`);
+      onDeleteSuccess?.();
+    } catch (e) {
+      toast.error(`Failed to delete: ${e.message}`);
+    } finally {
+      setDeletingFile(null);
+    }
+  };
+
   const storedOutputs = logs.slice(0, 5);
 
   const sidebarContent = (
@@ -68,15 +86,27 @@ export default function Sidebar({
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.06 }}
-                  className="sidebar-item"
+                  className="sidebar-item group relative"
                 >
                   <FileText size={12} className="text-violet-400 shrink-0" />
-                  <span className="truncate">{src.name || src}</span>
+                  <span className="truncate pr-5">{src.name || src}</span>
                   {src.size && (
-                    <span className="ml-auto text-[10px] text-slate-600 shrink-0">
+                    <span className="ml-auto text-[10px] text-slate-600 shrink-0 group-hover:hidden pr-1">
                       {formatBytes(src.size)}
                     </span>
                   )}
+                  <button
+                    onClick={() => handleDelete(src.name || src)}
+                    disabled={deletingFile === (src.name || src)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-red-500/0 hover:text-red-400 group-hover:text-red-400/60 transition-all rounded hover:bg-red-500/10 hidden group-hover:flex items-center justify-center -mr-1"
+                    title="Delete file"
+                  >
+                    {deletingFile === (src.name || src) ? (
+                      <Loader2 size={12} className="animate-spin text-red-400" />
+                    ) : (
+                      <Trash2 size={12} />
+                    )}
+                  </button>
                 </motion.div>
               ))
             )}
@@ -126,9 +156,21 @@ export default function Sidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex glass border-r border-white/[0.06] w-64 shrink-0 flex-col h-full">
-        {sidebarContent}
-      </aside>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.aside
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 256, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+            className="hidden lg:flex shrink-0 border-r border-white/[0.06] flex-col h-full overflow-hidden glass"
+          >
+            <div className="w-64 h-full shrink-0">
+              {sidebarContent}
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* Mobile overlay */}
       <AnimatePresence>

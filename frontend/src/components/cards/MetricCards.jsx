@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Cpu, Database, Brain, BarChart3 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Cpu, Database, Brain, BarChart3, ChevronDown, ChevronUp } from "lucide-react";
 
 const cards = [
   {
@@ -73,6 +73,8 @@ function AnimatedCounter({ value, isString }) {
 }
 
 export default function MetricCards({ isOnline, sourcesCount, memoryTurns, queriesRun }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const values = {
     index: isOnline ? "Online" : "Offline",
     sources: sourcesCount,
@@ -87,8 +89,31 @@ export default function MetricCards({ isOnline, sourcesCount, memoryTurns, queri
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 px-5 pb-4">
-      {cards.map((card, i) => {
+    <div className="px-5 pb-4">
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
+          Metrics Dashboard
+        </span>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200 transition"
+        >
+          {isExpanded ? "Hide" : "Show"}
+          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+              {cards.map((card, i) => {
         const Icon = card.icon;
         const val = values[card.key];
         const isStr = typeof val === "string";
@@ -151,7 +176,11 @@ export default function MetricCards({ isOnline, sourcesCount, memoryTurns, queri
             </div>
           </motion.div>
         );
-      })}
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

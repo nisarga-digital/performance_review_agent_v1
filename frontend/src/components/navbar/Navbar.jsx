@@ -13,7 +13,7 @@ export default function Navbar({ isOnline, sidebarOpen, setSidebarOpen }) {
       {/* Hamburger */}
       <button
         onClick={() => setSidebarOpen((s) => !s)}
-        className="lg:hidden flex flex-col gap-1 p-1.5 rounded-md hover:bg-white/5 transition"
+        className="flex flex-col gap-1 p-1.5 rounded-md hover:bg-white/5 transition"
       >
         {[0, 1, 2].map((i) => (
           <span
@@ -29,7 +29,7 @@ export default function Navbar({ isOnline, sidebarOpen, setSidebarOpen }) {
           <Activity size={14} className="text-white" />
         </div>
         <span className="font-semibold text-[15px] gradient-text tracking-tight hidden sm:block">
-          Performance Review Intelligence
+          Performance Review Agent
         </span>
         <span className="font-semibold text-[15px] gradient-text tracking-tight sm:hidden">
           PRI

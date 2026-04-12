@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const BASE_URL = "http://localhost:8000";
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -28,13 +28,18 @@ export const healthCheck = async () => {
 
 export const getDataSources = async () => {
   const res = await api.get("/api/data-sources");
-  return res.data; // expected: { sources: [{name, size, type, uploadedAt}] }
+  const sources = (res.data.data_sources || []).map(s => ({
+    name: s.name,
+    size: s.size_kb ? s.size_kb * 1024 : undefined,
+    type: s.type
+  }));
+  return { sources };
 };
 
 export const uploadFile = async (file, onProgress) => {
   const formData = new FormData();
   formData.append("file", file);
-  const res = await api.post("/api/upload", formData, {
+  const res = await api.post("/api/upload-data", formData, {
     headers: { "Content-Type": "multipart/form-data" },
     onUploadProgress: (e) => {
       if (onProgress && e.total) {
@@ -59,8 +64,18 @@ export const getCSVPreview = async (filename) => {
 };
 
 export const getLogs = async () => {
-  const res = await api.get("/api/logs");
-  return res.data; // expected: { logs: [{query, response, timestamp}] }
+  const res = await api.get("/api/query-log");
+  const logs = (res.data.entries || []).map(e => ({
+    ...e,
+    query: e.question,
+    response: e.answer
+  }));
+  return { logs };
+};
+
+export const deleteDataSource = async (filename) => {
+  const res = await api.delete(`/api/data-sources/${encodeURIComponent(filename)}`);
+  return res.data;
 };
 
 export default api;

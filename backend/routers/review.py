@@ -51,9 +51,13 @@ class ChatMessage(BaseModel):
 
 class AnalyzeRequest(BaseModel):
     question: str = Field(
-        ..., min_length=3, description="Natural-language performance analytics question"
+        ...,
+        min_length=3,
+        description="Natural-language performance analytics question",
+        alias="query",
     )
-    chat_history: list[ChatMessage] = Field(default_factory=list)
+    chat_history: list[ChatMessage] = Field(default_factory=list, alias="history")
+    model_config = {"populate_by_name": True}
 
 
 class AnalyzeResponse(BaseModel):

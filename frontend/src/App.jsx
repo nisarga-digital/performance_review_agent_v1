@@ -140,6 +140,7 @@ export default function App() {
           isOnline={isOnline}
           dataSources={dataSources}
           onUploadSuccess={handleUploadSuccess}
+          onDeleteSuccess={refresh}
           logs={logs}
         />
 
@@ -153,7 +154,7 @@ export default function App() {
             className="px-5 pt-5 pb-3 text-center shrink-0"
           >
             <h1 className="text-2xl font-semibold gradient-text tracking-tight mb-1">
-              Performance Review Intelligence
+              Performance Review Agent
             </h1>
             <p className="text-[11px] text-slate-600 tracking-[2px] uppercase mb-3">
               AI-Powered · Conversational Memory · CSV & Excel Analysis

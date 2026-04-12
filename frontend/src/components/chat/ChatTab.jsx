@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronRight, Sparkles, Trash2 } from "lucide-react";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { analyzeQuery } from "../../api";
@@ -86,19 +86,32 @@ export default function ChatTab({ isOnline, onQuerySent }) {
         };
         setMessages((prev) => [...prev, botMsg]);
         onQuerySent?.();
-      } catch {
-        // Offline / dev fallback
-        const fallbackMsg = {
+      } catch (err) {
+        let botText = "";
+        let isError = false;
+
+        // Display the actual error if we have a specific message and we're online
+        if (err.message && err.message !== "Network Error" && isOnline) {
+          botText = `🚨 **Analysis Failed**\n\n\`\`\`\n${err.message}\n\`\`\``;
+          isError = true;
+          toast.error("Analysis failed");
+        } else {
+          // Offline / dev fallback
+          botText = getFallbackResponse(trimmed);
+          if (!isOnline) {
+            toast("Running in offline demo mode", { icon: "⚡" });
+          }
+        }
+
+        const botMsg = {
           id: Date.now() + 1,
           role: "assistant",
-          text: getFallbackResponse(trimmed),
+          text: botText,
           timestamp: new Date().toISOString(),
+          isError,
         };
-        setMessages((prev) => [...prev, fallbackMsg]);
+        setMessages((prev) => [...prev, botMsg]);
         onQuerySent?.();
-        if (!isOnline) {
-          toast("Running in offline demo mode", { icon: "⚡" });
-        }
       } finally {
         setIsLoading(false);
         setIsTyping(false);
@@ -115,11 +128,11 @@ export default function ChatTab({ isOnline, onQuerySent }) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Sample questions */}
-      <div className="px-5 pt-4 shrink-0">
+      {/* Header Controls */}
+      <div className="flex items-center justify-between px-5 pt-4 shrink-0 mb-2">
         <button
           onClick={() => setShowSamples((s) => !s)}
-          className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-300 transition mb-2"
+          className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-300 transition"
         >
           {showSamples ? (
             <ChevronDown size={13} />
@@ -127,8 +140,22 @@ export default function ChatTab({ isOnline, onQuerySent }) {
             <ChevronRight size={13} />
           )}
           <Sparkles size={12} className="text-violet-400" />
-          Sample Questions — click to use
+          Sample Questions
         </button>
+
+        {messages.length > 0 && (
+          <button
+            onClick={clearHistory}
+            className="flex items-center gap-1.5 text-[11px] text-slate-500 hover:text-red-400 border border-transparent hover:border-red-500/20 hover:bg-red-500/10 px-2 py-1 rounded-md transition-all"
+            title="Clear Conversation"
+          >
+            <Trash2 size={12} />
+            <span>Clear Chat</span>
+          </button>
+        )}
+      </div>
+
+      <div className="px-5 shrink-0">
 
         <AnimatePresence>
           {showSamples && (
@@ -207,17 +234,7 @@ export default function ChatTab({ isOnline, onQuerySent }) {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Clear history */}
-      {messages.length > 0 && (
-        <div className="px-5 py-1 flex justify-end shrink-0">
-          <button
-            onClick={clearHistory}
-            className="text-[10px] text-slate-700 hover:text-slate-500 transition"
-          >
-            Clear history
-          </button>
-        </div>
-      )}
+
 
       {/* Input */}
       <ChatInput

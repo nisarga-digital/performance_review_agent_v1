@@ -48,7 +48,7 @@ export default function FileUploader({ onSuccess }) {
         const result = await uploadFile(file, (pct) => setProgress(pct));
         setStatus("success");
         toast.success(`"${file.name}" uploaded successfully!`);
-        onSuccess?.(result);
+        onSuccess?.({ name: file.name, size: file.size });
         setTimeout(() => {
           setStatus(null);
           setProgress(0);

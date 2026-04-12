@@ -5,9 +5,10 @@ LangGraph Agent orchestration for the Performance Review Assistant.
 import os
 import sqlite3
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
 from langgraph.checkpoint.sqlite import SqliteSaver
 from dotenv import load_dotenv
+from middleware.force_tool_middleware import ForceToolMiddleware
 
 # Import your existing tools list
 from tools.data_tools import TOOLS
@@ -50,17 +51,20 @@ memory = SqliteSaver(conn)
 
 def build_agent():
     """Construct and return the configured LangGraph agent."""
+
     model = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
         google_api_key=os.getenv("GOOGLE_API_KEY"),
         temperature=0.1,
     )
 
-    agent_executor = create_react_agent(
-        model,
-        tools=TOOLS,
-        prompt=SYSTEM_PROMPT,
-        checkpointer=memory,
+    agent_executor = create_agent(
+    model=model,
+    tools=TOOLS,
+    system_prompt=SYSTEM_PROMPT,
+    middleware=[ForceToolMiddleware()],  # noqa: F821
+    checkpointer=memory,   # ✅ still works
+    debug=True,            # 🔥 VERY IMPORTANT (tool tracing)
     )
 
     return agent_executor
