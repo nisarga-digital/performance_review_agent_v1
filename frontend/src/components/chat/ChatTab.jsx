@@ -7,6 +7,14 @@ import { analyzeQuery } from "../../api";
 import toast from "react-hot-toast";
 
 const CHAT_STORAGE_KEY = "pri_chat_history";
+const CHAT_SESSION_KEY = "pri_chat_session_id";
+
+function createSessionId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `session_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
 
 const SAMPLE_QUESTIONS = [
   "Who are the top performers this quarter?",
@@ -35,6 +43,13 @@ export default function ChatTab({ isOnline, onQuerySent }) {
 
   const chatEndRef = useRef(null);
   const scrollRef = useRef(null);
+  const sessionIdRef = useRef(
+    localStorage.getItem(CHAT_SESSION_KEY) || createSessionId()
+  );
+
+  useEffect(() => {
+    localStorage.setItem(CHAT_SESSION_KEY, sessionIdRef.current);
+  }, []);
 
   // Persist messages to localStorage
   useEffect(() => {
@@ -77,7 +92,11 @@ export default function ChatTab({ isOnline, onQuerySent }) {
       setIsTyping(true);
 
       try {
-        const data = await analyzeQuery(trimmed, buildHistory());
+        const data = await analyzeQuery(
+          trimmed,
+          buildHistory(),
+          sessionIdRef.current
+        );
         const botMsg = {
           id: Date.now() + 1,
           role: "assistant",
@@ -123,6 +142,8 @@ export default function ChatTab({ isOnline, onQuerySent }) {
   const clearHistory = () => {
     setMessages([]);
     localStorage.removeItem(CHAT_STORAGE_KEY);
+    sessionIdRef.current = createSessionId();
+    localStorage.setItem(CHAT_SESSION_KEY, sessionIdRef.current);
     toast.success("Chat history cleared");
   };
 

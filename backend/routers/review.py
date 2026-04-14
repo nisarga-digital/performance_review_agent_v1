@@ -4,13 +4,14 @@ FastAPI router: /api/review endpoints
 
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
-from langchain_core.messages import AIMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 import shutil
 import json
+import uuid
 from pathlib import Path
+from agent import get_agent
 from datetime import datetime
 
-from agent import get_agent
 
 router = APIRouter(prefix="/api", tags=["Performance Review"])
 
@@ -53,10 +54,15 @@ class AnalyzeRequest(BaseModel):
     question: str = Field(
         ...,
         min_length=3,
-        description="Natural-language performance analytics question",
+        description="Latest user chat message for the performance review assistant",
         alias="query",
     )
     chat_history: list[ChatMessage] = Field(default_factory=list, alias="history")
+    session_id: str | None = Field(
+        default=None,
+        description="Stable chat session identifier used for conversation memory",
+        alias="sessionId",
+    )
     model_config = {"populate_by_name": True}
 
 
@@ -79,6 +85,13 @@ class QueryLogResponse(BaseModel):
     entries: list[QueryLogEntry]
     count: int
 
+class StatsResponse(BaseModel):
+    employees: int
+    self_reviews: int
+    manager_reviews: int
+    complete: int
+
+
 
 def _extract_review_text(agent_result: dict) -> str:
     # ✅ Case 1: direct output (new LangChain)
@@ -87,11 +100,12 @@ def _extract_review_text(agent_result: dict) -> str:
 
     # ✅ Case 2: messages (your current logic)
     messages = agent_result.get("messages", [])
+    print(messages, "messages getting printed")
     for message in reversed(messages):
         if isinstance(message, AIMessage):
             content = message.content
-            if isinstance(content, str):
-                return content
+            if isinstance(content, str) and content.strip():
+                return content.strip()
             if isinstance(content, list):
                 text_parts = []
                 for item in content:
@@ -111,7 +125,25 @@ def _extract_tools_used(agent_result: dict) -> list[str]:
     for message in messages:
         if isinstance(message, ToolMessage) and getattr(message, "name", None):
             tools_used.append(message.name)
+    for step in agent_result.get("intermediate_steps", []):
+        action = step[0] if isinstance(step, (tuple, list)) and step else None
+        tool_name = getattr(action, "tool", None)
+        if tool_name:
+            tools_used.append(tool_name)
     return sorted(set(tools_used))
+
+
+def _build_agent_history(history: list[ChatMessage]) -> list[HumanMessage | AIMessage]:
+    messages: list[HumanMessage | AIMessage] = []
+    for message in history:
+        content = message.content.strip()
+        if not content:
+            continue
+        if message.role == "assistant":
+            messages.append(AIMessage(content=content))
+        else:
+            messages.append(HumanMessage(content=content))
+    return messages
 
 
 def _load_query_log() -> list[dict]:
@@ -161,19 +193,12 @@ async def generate_review(request: ReviewRequest):
         agent = get_agent()
         result = agent.invoke(
             {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": f"""
-                        You MUST use CSV_Search or Excel_Search before answering.
-
-                        User request:
-                        {query}
-                        """,
-                    }
-                ]
-            },
-            config={"configurable": {"thread_id": "default_api_session"}}
+                "input": (
+                    "You MUST use CSV_Search or Excel_Search before answering.\n\n"
+                    f"User request:\n{query}"
+                ),
+                "chat_history": [],
+            }
         )
         review_text = _extract_review_text(result)
         tools_used = _extract_tools_used(result)
@@ -192,25 +217,17 @@ async def generate_review(request: ReviewRequest):
 
 @router.post("/analyze", response_model=AnalyzeResponse)
 async def analyze_question(request: AnalyzeRequest):
-    """Answer a free-form question about employee performance data."""
-    prompt_lines = [
-        "Answer the following performance analysis question using the available CSV and Excel data.",
-        "Always search the data first before answering.",
-        f"Question: {request.question}",
-    ]
-
-    if request.chat_history:
-        prompt_lines.append("Relevant prior conversation:")
-        for message in request.chat_history[-6:]:
-            prompt_lines.append(f"{message.role}: {message.content}")
-
-    prompt = "\n".join(prompt_lines)
+    """Handle a conversational turn for the performance review assistant."""
+    thread_id = (request.session_id or "").strip() or f"chat_{uuid.uuid4().hex}"
+    chat_history = _build_agent_history(request.chat_history)
 
     try:
         agent = get_agent()
         result = agent.invoke(
-            {"messages": [{"role": "user", "content": prompt}]},
-            config={"configurable": {"thread_id": "default_api_session"}}
+            {
+                "input": request.question,
+                "chat_history": chat_history,
+            }
         )
         answer = _extract_review_text(result)
         tools_used = _extract_tools_used(result)
@@ -221,6 +238,7 @@ async def analyze_question(request: AnalyzeRequest):
             "question": request.question,
             "answer": answer,
             "tools_used": tools_used,
+            "session_id": thread_id,
         }
         _append_query_log(entry)
 
@@ -294,3 +312,37 @@ async def list_data_sources():
 async def get_query_log():
     entries = _load_query_log()
     return QueryLogResponse(entries=entries[::-1], count=len(entries))
+
+
+@router.get('/stats', response_model=StatsResponse)
+async def get_stats():
+    from tools.data_tools import _load_employee_directory, _get_reviews_connection
+    directory = _load_employee_directory()
+    employees_count = len(directory) if not directory.empty else 0
+    
+    self_count = 0
+    mgr_count = 0
+    complete_count = 0
+    
+    try:
+        with _get_reviews_connection() as conn:
+            row_self = conn.execute('SELECT COUNT(*) FROM self_reviews').fetchone()
+            if row_self: self_count = row_self[0]
+            
+            row_mgr = conn.execute('SELECT COUNT(*) FROM manager_reviews').fetchone()
+            if row_mgr: mgr_count = row_mgr[0]
+            
+            row_comp = conn.execute(
+                'SELECT COUNT(*) FROM self_reviews s JOIN manager_reviews m ON s.employee_id = m.employee_id'
+            ).fetchone()
+            if row_comp: complete_count = row_comp[0]
+    except Exception:
+        pass
+        
+    return StatsResponse(
+        employees=employees_count,
+        self_reviews=self_count,
+        manager_reviews=mgr_count,
+        complete=complete_count
+    )
+

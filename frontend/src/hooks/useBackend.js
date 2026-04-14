@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { healthCheck, getDataSources, getLogs } from "../api";
+import { healthCheck, getDataSources, getLogs, getStats } from "../api";
 
 const POLL_INTERVAL = 5000; // 5 seconds
 
@@ -10,6 +10,7 @@ export function useBackend() {
   const [queriesRun, setQueriesRun] = useState(0);
   const [memoryTurns, setMemoryTurns] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ employees: 0, self_reviews: 0, manager_reviews: 0, complete: 0 });
 
   const isMounted = useRef(true);
   const pollRef = useRef(null);
@@ -46,10 +47,19 @@ export function useBackend() {
     }
   }, []);
 
+  const fetchStats = useCallback(async () => {
+    try {
+      const data = await getStats();
+      if (!isMounted.current) return;
+      setStats(data || { employees: 0, self_reviews: 0, manager_reviews: 0, complete: 0 });
+    } catch {
+    }
+  }, []);
+
   const refresh = useCallback(async () => {
-    await Promise.allSettled([fetchHealth(), fetchSources(), fetchLogs()]);
+    await Promise.allSettled([fetchHealth(), fetchSources(), fetchLogs(), fetchStats()]);
     if (isMounted.current) setLoading(false);
-  }, [fetchHealth, fetchSources, fetchLogs]);
+  }, [fetchHealth, fetchSources, fetchLogs, fetchStats]);
 
   // Increment queries/turns locally (optimistic update while offline)
   const incrementQuery = useCallback(() => {
@@ -78,5 +88,7 @@ export function useBackend() {
     loading,
     refresh,
     incrementQuery,
+    stats,
+    fetchStats,
   };
 }

@@ -4,7 +4,7 @@ const BASE_URL = "http://localhost:8000";
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 30000,
+  timeout: 300000, // 5 minutes
   headers: { "Content-Type": "application/json" },
 });
 
@@ -50,10 +50,15 @@ export const uploadFile = async (file, onProgress) => {
   return res.data;
 };
 
-export const analyzeQuery = async (query, conversationHistory = []) => {
+export const analyzeQuery = async (
+  query,
+  conversationHistory = [],
+  sessionId = null
+) => {
   const res = await api.post("/api/analyze", {
     query,
     history: conversationHistory,
+    sessionId,
   });
   return res.data; // expected: { answer: string, sources: [] }
 };
@@ -71,6 +76,11 @@ export const getLogs = async () => {
     response: e.answer
   }));
   return { logs };
+};
+
+export const getStats = async () => {
+  const res = await api.get("/api/stats");
+  return res.data;
 };
 
 export const deleteDataSource = async (filename) => {
