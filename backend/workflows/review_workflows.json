@@ -1,0 +1,175 @@
+{
+  "employee_review_flow": {
+    "title": "Employee Performance Review",
+    "description": "Goal-based employee performance review questionnaire",
+    "type": "overview_then_sequential",
+    "allow_navigation": true,
+    "overview_first": true,
+    "start_action": "Begin self-review",
+    "rating_scale": [
+      {
+        "value": 1,
+        "label": "Below"
+      },
+      {
+        "value": 2,
+        "label": "Partial"
+      },
+      {
+        "value": 3,
+        "label": "Meets"
+      },
+      {
+        "value": 4,
+        "label": "Exceeds"
+      },
+      {
+        "value": 5,
+        "label": "Exemplary"
+      }
+    ],
+    "questions": [
+      {
+        "id": "goal_1",
+        "order": 1,
+        "goal_number": 1,
+        "title": "DigitalSprint, Ownership, and Growth",
+        "type": "text",
+        "kpis": ["Initiative", "Ownership", "Growth mindset"],
+        "question": "Believes in DigitalSprint, takes ownership, and contributes to growth.",
+        "prompt": "Please share a specific example from this review period.",
+        "required": true,
+        "validation": {
+          "min_length": 10
+        }
+      },
+      {
+        "id": "goal_2",
+        "order": 2,
+        "goal_number": 2,
+        "title": "Mentorship or Project Leadership",
+        "type": "text",
+        "kpis": ["Mentoring", "Leading", "Accountability"],
+        "question": "Takes initiative to mentor others and/or lead a project this year.",
+        "prompt": "Please share a specific example from this review period.",
+        "required": true,
+        "validation": {
+          "min_length": 10
+        }
+      },
+      {
+        "id": "goal_3",
+        "order": 3,
+        "goal_number": 3,
+        "title": "Team Engagement and Motivation",
+        "type": "text",
+        "kpis": ["Team morale", "Encouragement", "Collaboration"],
+        "question": "Engages and motivates the team to do better every day.",
+        "prompt": "Please share a specific example from this review period.",
+        "required": true,
+        "validation": {
+          "min_length": 10
+        }
+      },
+      {
+        "id": "goal_4",
+        "order": 4,
+        "goal_number": 4,
+        "title": "Feedback Culture",
+        "type": "text",
+        "kpis": ["Gives feedback", "Receives feedback", "Acts on feedback"],
+        "question": "Open to giving and receiving feedback.",
+        "prompt": "Please share a specific example from this review period.",
+        "required": true,
+        "validation": {
+          "min_length": 10
+        }
+      },
+      {
+        "id": "goal_5",
+        "order": 5,
+        "goal_number": 5,
+        "title": "Task Delivery and Quality",
+        "type": "text",
+        "kpis": ["On-time delivery", "Quality", "Reliability"],
+        "question": "Delivers assigned tasks or projects on time and with high quality.",
+        "prompt": "Please share a specific example from this review period.",
+        "required": true,
+        "validation": {
+          "min_length": 10
+        }
+      },
+      {
+        "id": "goal_6",
+        "order": 6,
+        "goal_number": 6,
+        "title": "Technical Skills and Tools",
+        "type": "text",
+        "kpis": ["Skill growth", "Tool adoption", "Problem solving"],
+        "question": "Improves technical skills or adopts new tools to solve challenges.",
+        "prompt": "Please share a specific example from this review period.",
+        "required": true,
+        "validation": {
+          "min_length": 10
+        }
+      },
+      {
+        "id": "goal_7",
+        "order": 7,
+        "goal_number": 7,
+        "title": "Technical Collaboration",
+        "type": "text",
+        "kpis": [
+          "Cross-team collaboration",
+          "Roadblock resolution",
+          "Knowledge sharing"
+        ],
+        "question": "Collaborates effectively with the team to resolve technical roadblocks.",
+        "prompt": "Please share a specific example from this review period.",
+        "required": true,
+        "validation": {
+          "min_length": 10
+        }
+      },
+      {
+        "id": "goal_8",
+        "order": 8,
+        "goal_number": 8,
+        "title": "Strengths",
+        "type": "multi_select",
+        "kpis": ["Self-awareness", "Role fit"],
+        "question": "Please pick exactly two strengths.",
+        "required": true,
+        "options": [
+          "Technical Skills",
+          "Communication",
+          "Leadership",
+          "Problem Solving",
+          "Ownership",
+          "Collaboration",
+          "Time Management",
+          "Adaptability"
+        ],
+        "selection_limit": 2
+      },
+      {
+        "id": "goal_9",
+        "order": 9,
+        "goal_number": 9,
+        "title": "Development Area",
+        "type": "single_select",
+        "kpis": ["Self-awareness", "Growth mindset"],
+        "question": "Please pick one development area.",
+        "required": true,
+        "options": [
+          "Technical Skills",
+          "Communication",
+          "Leadership",
+          "Time Management",
+          "Project Planning",
+          "Stakeholder Management"
+        ]
+      }
+    ]
+  }
+}

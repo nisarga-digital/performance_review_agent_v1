@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-bg: #F9F8F5; /* light cream */
+  --sidebar-bg: #FFFFFF;
+  --text-main: #2C3530;
+  --text-muted: #8AA095;
+  --accent-green: #295745;
+  --accent-green-hover: #1D4333;
+}
+
+html.dark {
+  --primary-bg: #121212;
+  --sidebar-bg: #1E1E1E;
+  --text-main: #E0E0E0;
+  --text-muted: #A0AAB2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--primary-bg);
+  color: var(--text-main);
+  font-family: "Inter", sans-serif;
+}
+
+h1, h2, h3, h4, .font-serif {
+  font-family: "Playfair Display", serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.soft-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.pill-button {
+  border-radius: 9999px;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: 1px solid #E5E7EB;
+  background: var(--sidebar-bg);
+  color: var(--text-main);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.pill-button:hover {
+  border-color: #D1D5DB;
+  background: #F3F4F6;
+}
+html.dark .pill-button {
+  border-color: #333;
+  background: #2A2A2A;
+  color: #E0E0E0;
+}
+html.dark .pill-button:hover {
+  border-color: #444;
+  background: #333;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  border: 1px solid #E5E7EB;
+  background: var(--sidebar-bg);
+  font-size: 13px;
+  color: #6B7280;
+}
+html.dark .badge {
+  border-color: #333;
+  background: #2A2A2A;
+  color: #A0AAB2;
+}
+
+/* Chat markdown styling */
+.chat-markdown {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3 {
+  font-family: "Playfair Display", serif;
+  color: var(--text-main);
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+.chat-markdown p {
+  margin: 8px 0;
+}
+.chat-markdown strong {
+  font-weight: 600;
+}
+.chat-markdown ul,
+.chat-markdown ol {
+  margin: 8px 0 8px 16px;
+  padding: 0;
+  list-style-position: outside;
+}
+.chat-markdown li {
+  margin: 4px 0;
+}
