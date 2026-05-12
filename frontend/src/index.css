@@ -11,6 +11,13 @@
   --accent-green-hover: #1D4333;
 }
 
+html.dark {
+  --primary-bg: #121212;
+  --sidebar-bg: #1E1E1E;
+  --text-main: #E0E0E0;
+  --text-muted: #A0AAB2;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -53,7 +60,7 @@ h1, h2, h3, h4, .font-serif {
   padding: 8px 16px;
   font-size: 14px;
   border: 1px solid #E5E7EB;
-  background: white;
+  background: var(--sidebar-bg);
   color: var(--text-main);
   transition: all 0.2s;
   cursor: pointer;
@@ -61,6 +68,15 @@ h1, h2, h3, h4, .font-serif {
 .pill-button:hover {
   border-color: #D1D5DB;
   background: #F3F4F6;
+}
+html.dark .pill-button {
+  border-color: #333;
+  background: #2A2A2A;
+  color: #E0E0E0;
+}
+html.dark .pill-button:hover {
+  border-color: #444;
+  background: #333;
 }
 
 .badge {
@@ -70,9 +86,14 @@ h1, h2, h3, h4, .font-serif {
   padding: 4px 12px;
   border-radius: 9999px;
   border: 1px solid #E5E7EB;
-  background: white;
+  background: var(--sidebar-bg);
   font-size: 13px;
   color: #6B7280;
+}
+html.dark .badge {
+  border-color: #333;
+  background: #2A2A2A;
+  color: #A0AAB2;
 }
 
 /* Chat markdown styling */

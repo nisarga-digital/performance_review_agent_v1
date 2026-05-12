@@ -43,11 +43,20 @@ def _get_reviews_connection() -> sqlite3.Connection:
             achievements TEXT NOT NULL,
             strengths TEXT NOT NULL,
             challenges TEXT NOT NULL,
+            goal_responses TEXT NOT NULL DEFAULT '',
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
         )
         """
     )
+    columns = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(self_reviews)").fetchall()
+    }
+    if "goal_responses" not in columns:
+        conn.execute(
+            "ALTER TABLE self_reviews ADD COLUMN goal_responses TEXT NOT NULL DEFAULT ''"
+        )
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS manager_reviews (
@@ -248,7 +257,8 @@ def save_self_review(
     self_rating: float,
     achievements: str,
     strengths: str,
-    challenges: str
+    challenges: str,
+    goal_responses: str = ""
 ) -> str:
     """Save an employee's self-review to the database."""
     employee = _resolve_employee(employee_id)
@@ -259,20 +269,22 @@ def save_self_review(
     achievements_text = _require_text(achievements, "achievements")
     strengths_text = _require_text(strengths, "strengths")
     challenges_text = _require_text(challenges, "challenges")
+    goal_responses_text = str(goal_responses or "").strip()
     now = _utc_now()
 
     with _get_reviews_connection() as conn:
         conn.execute(
             """
             INSERT INTO self_reviews (
-                employee_id, self_rating, achievements, strengths, challenges, created_at, updated_at
+                employee_id, self_rating, achievements, strengths, challenges, goal_responses, created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(employee_id) DO UPDATE SET
                 self_rating = excluded.self_rating,
                 achievements = excluded.achievements,
                 strengths = excluded.strengths,
                 challenges = excluded.challenges,
+                goal_responses = excluded.goal_responses,
                 updated_at = excluded.updated_at
             """,
             (
@@ -281,6 +293,7 @@ def save_self_review(
                 achievements_text,
                 strengths_text,
                 challenges_text,
+                goal_responses_text,
                 now,
                 now,
             ),
